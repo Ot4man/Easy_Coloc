@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Colocation extends Model
 {
-    protected $fillable = [ 'name','status' ];
+    protected $fillable = [ 'name','description','status' ];
 
 
     public function users()
@@ -27,4 +27,8 @@ class Colocation extends Model
     {
         return $this->hasMany(Invitation::class);
     }
+    public function categories()
+{
+    return $this->hasMany(Category::class);
+}
 }
