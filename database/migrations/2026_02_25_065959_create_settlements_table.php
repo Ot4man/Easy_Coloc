@@ -17,7 +17,8 @@ return new class extends Migration
             $table->decimal('amount',10,2);
             $table->boolean('is_paid')->default(false);
             $table->foreignId('colocation_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('payer_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('receiver_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
