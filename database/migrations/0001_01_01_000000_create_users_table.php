@@ -21,6 +21,7 @@ return new class extends Migration
             $table->boolean('is_banned')->default(false);
             $table->rememberToken();
             $table->timestamps();
+            $table->foreignId('role_id')->nullable()->constrained()->cascadeOnDelete();
 
         });
 
