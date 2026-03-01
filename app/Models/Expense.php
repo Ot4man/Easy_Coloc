@@ -7,7 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Expense extends Model
 {
     //
-    protected $fillable = ['title','amount','date','user_id','colocation_id','category_id'];
+    protected $fillable = ['title', 'amount', 'date', 'colocation_id', 'category_id', 'user_id'];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'date' => 'date',
+            'amount' => 'decimal:2',
+        ];
+    }
     public function user()
     {
         return $this->belongsTo(User::class);
