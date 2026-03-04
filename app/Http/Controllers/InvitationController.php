@@ -35,7 +35,7 @@ class InvitationController extends Controller
 
         //verify if user is banned
         if ($user->isBanned()) {
-            return back()->with('error', 'Action interdite : votre compte est banni.');
+            return back()->with('error', 'You are banned');
         }
 
         // find active colocation of user
@@ -57,23 +57,23 @@ class InvitationController extends Controller
             'status' => 'pending'
         ]);
 
-        // send email via Mailtrap
+        // send email via mailtrap
         $link = route('invitations.accept', $token);
 
         try {
-            Mail::raw("Bonjour ! Vous avez été invité à rejoindre la colocation : {$activeColocation->name}. Cliquez ici pour rejoindre l'équipe : $link", function ($message) use ($request) {
-                $message->to($request->email)->subject('Invitation à une Colocation - Easy Coloc');
+            Mail::raw("Hello you are invited to the colocation : {$activeColocation->name}. Click here to jpoin: $link", function ($message) use ($request) {
+                $message->to($request->email)->subject('Invitaion of Colocation - Easy Coloc');
             });
         } catch (\Exception $e) {
-            // En cas d'erreur SMTP/Mailtrap, on log l'erreur mais on continue (optionnel)
-            return back()->with('error', "L'invitation a été enregistrée mais l'email n'a pas pu être envoyé (Vérifiez votre config Mailtrap).");
+
+            return back()->with('error', "invitation saved but not sent");
         }
 
-        return back()->with('status', 'Invitation envoyée avec succès via Mailtrap !');
+        return back()->with('status', 'Invitation sent ');
     }
 
     /**
-     * Accepter l'invitation (GET) -
+     * Accepter l'invitation -
      */
     public function accept($token)
     {
@@ -124,7 +124,7 @@ class InvitationController extends Controller
     }
 
     /**
-     * Refuser l'invitation (POST)
+     * Refuser l'invitation 
      */
     public function refuse($token)
     {

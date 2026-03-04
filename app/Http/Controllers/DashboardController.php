@@ -6,6 +6,7 @@ use App\Models\Expense;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\invitation;
 class DashboardController extends Controller
 {
     public function index()
@@ -15,7 +16,7 @@ class DashboardController extends Controller
         // Reputation score
         $reputationScore = $user->reputation_score ?? 0;
 
-        // Active Colocation (the latest active one)
+        // Active Colocation
         $activeColocation = $user->colocations()
             ->where('status', 'active')
             ->wherePivotNull('left_at')
@@ -24,13 +25,28 @@ class DashboardController extends Controller
             }])
             ->first();
 
-        // Current month expenses (user paid)
-        $currentMonthExpensesSum = 0;
+        // Calculate user sold in the active colocation
+        $userBalance = 0;
         if ($activeColocation) {
-            $currentMonthExpensesSum = Expense::where('colocation_id', $activeColocation->id)
-                ->whereMonth('created_at', now()->month)
-                ->whereYear('created_at', now()->year)
-                ->sum('amount');
+            $members = $activeColocation->users()->wherePivotNull('left_at')->get();
+            $memberCount = $members->count();
+
+            if ($memberCount > 0) {
+                $unpaidExpenses = Expense::where('colocation_id', $activeColocation->id)
+                    ->where('is_paid', false)
+                    ->get();
+
+                foreach ($unpaidExpenses as $expense) {
+                    $share = $expense->amount / $memberCount;
+                    if ($expense->user_id === $user->id) {
+                        // User paid the full amount
+                        $userBalance += ($expense->amount - $share);
+                    } else {
+                        // Someone else paid, user owes their share
+                        $userBalance -= $share;
+                    }
+                }
+            }
         }
 
         // Recent expenses in user's colocations
@@ -42,7 +58,7 @@ class DashboardController extends Controller
             ->get();
 
         // Pending Invitations
-        $pendingInvitations = \App\Models\Invitation::where('email', $user->email)
+        $pendingInvitations = Invitation::where('email', $user->email)
             ->where('status', 'pending')
             ->with('colocation')
             ->get();
@@ -50,7 +66,7 @@ class DashboardController extends Controller
         return view('dashboard', compact(
             'reputationScore',
             'activeColocation',
-            'currentMonthExpensesSum',
+            'userBalance',
             'recentExpenses',
             'pendingInvitations'
         ));

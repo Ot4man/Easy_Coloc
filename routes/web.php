@@ -57,6 +57,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/colocations/{colocation}/leave', [ColocationController::class, 'leave'])
         ->name('colocations.leave');
+
+    Route::post('/colocations/{colocation}/remove/{user}', [ColocationController::class, 'removeMember'])
+        ->name('colocations.removeMember');
 });
 Route::middleware('auth')->group(function () {
 
@@ -69,6 +72,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/invitations/accept/{token}', [InvitationController::class, 'accept'])->name('invitations.accept');
     Route::post('/invitations/refuse/{token}', [InvitationController::class, 'refuse'])->name('invitations.refuse');
 
+    Route::get('/expenses/settlement', [ExpenseController::class, 'settlement'])->name('expenses.settlement');
+    Route::post('/expenses/{expense}/mark-as-paid', [ExpenseController::class, 'markAsPaid'])->name('expenses.mark-as-paid');
     Route::resource('expenses', ExpenseController::class)->except(['show']);
 
 });

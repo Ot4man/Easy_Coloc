@@ -19,7 +19,7 @@ class ExpenseController extends Controller
 
         // Check if user is authenticated and not banned
         if (!$user || $user->is_banned) {
-            abort(403);
+            abort(403, 'You are banned');
         }
 
         // Check if user has an active colocation
@@ -40,12 +40,64 @@ class ExpenseController extends Controller
     {
         [$user, $activeColocation] = $this->getAuthorizedUserAndColocation();
 
-        $expenses = Expense::with(['category'])
+        $expenses = Expense::with(['category', 'user'])
             ->where('colocation_id', $activeColocation->id)
+            ->where('is_paid', false)
             ->latest('date')
             ->get();
 
         return view('expenses.index', compact('expenses', 'activeColocation'));
+    }
+
+    public function settlement()
+    {
+        [$user, $activeColocation] = $this->getAuthorizedUserAndColocation();
+
+        $members = $activeColocation->users()->wherePivotNull('left_at')->get();
+        $unpaidExpenses = Expense::with(['user'])
+            ->where('colocation_id', $activeColocation->id)
+            ->where('is_paid', false)
+            ->get();
+
+        $settlements = [];
+        $memberCount = $members->count();
+
+        if ($memberCount > 1) {
+            foreach ($unpaidExpenses as $expense) {
+                // Skip expenses if the creator no longer exists
+                if (!$expense->user) {
+                    continue;
+                }
+
+                $share = $expense->amount / $memberCount;
+                foreach ($members as $member) {
+                    if ($member->id !== $expense->user_id) {
+                        $settlements[] = (object) [
+                            'expense' => $expense,
+                            'from' => $member->name,
+                            'to' => $expense->user->name,
+                            'amount' => $share,
+                            'can_mark_paid' => $user->id === $expense->user_id
+                        ];
+                    }
+                }
+            }
+        }
+
+        return view('expenses.settlement', compact('settlements', 'activeColocation'));
+    }
+
+    public function markAsPaid(Expense $expense)
+    {
+        [$user, $activeColocation] = $this->getAuthorizedUserAndColocation();
+
+        if ($expense->colocation_id !== $activeColocation->id || $expense->user_id !== $user->id) {
+            abort(403);
+        }
+
+        $expense->update(['is_paid' => true]);
+
+        return redirect()->back()->with('success', 'La dépense a été marquée comme payée.');
     }
 
     public function create()
@@ -86,7 +138,7 @@ class ExpenseController extends Controller
     {
         [$user, $activeColocation] = $this->getAuthorizedUserAndColocation();
 
-        // Expense must belong to user's colocation
+
         if ($expense->colocation_id !== $activeColocation->id) {
             abort(403);
         }
@@ -107,7 +159,7 @@ class ExpenseController extends Controller
 
         $category = Category::find($request->category_id);
 
-        // Category must belong to user's colocation
+
         if (!$category || $category->colocation_id !== $activeColocation->id) {
             abort(403);
         }
@@ -142,6 +194,5 @@ class ExpenseController extends Controller
 
     protected function recalculateBalances(Colocation $colocation)
     {
-        // Placeholder for balance recalculation logic
     }
 }

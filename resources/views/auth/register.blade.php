@@ -1,5 +1,10 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+    <div class="text-center mb-10">
+        <h2 class="text-3xl font-bold text-slate-800 tracking-tight">Inscription</h2>
+        <p class="text-slate-500 mt-2 text-sm font-medium">Rejoignez EasyColoc et simplifiez votre vie à plusieurs</p>
+    </div>
+
+    <form method="POST" action="{{ route('register') }}" class="space-y-5">
         @csrf
 
         <!-- Name -->
@@ -12,7 +17,7 @@
         <!-- Email Address -->
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $email ?? '')" required autocomplete="username" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
@@ -39,14 +44,17 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
+        <div class="pt-4">
+            <x-primary-button class="w-full justify-center text-lg py-3.5">
                 {{ __('Register') }}
             </x-primary-button>
+        </div>
+
+        <div class="mt-8 text-center text-sm">
+            <span class="text-slate-500">{{ __('Already registered?') }}</span>
+            <a class="font-semibold text-cyan-600 hover:text-cyan-800 ml-1 transition-colors" href="{{ route('login') }}">
+                Connectez-vous ici
+            </a>
         </div>
     </form>
 </x-guest-layout>

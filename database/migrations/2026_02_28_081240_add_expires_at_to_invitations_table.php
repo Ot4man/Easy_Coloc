@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('invitations', function (Blueprint $table) {
             $table->dateTime('expires_at')->after('token')->nullable();
 
-            // Set default status to pending
+            // Set default status to pending 
             $table->string('status')->default('pending')->change();
 
             // Remove unique from email if it exists

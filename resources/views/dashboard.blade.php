@@ -17,35 +17,35 @@
             <div class="hidden md:block w-px h-16 bg-cyan-400/50 z-10"></div>
 
             <div class="z-10 w-full md:w-auto text-center md:text-left">
-                <h3 class="text-sm font-medium text-cyan-100 mb-1">Dépenses Globales ({{ now()->format('M') }})</h3>
-                <div class="text-4xl md:text-5xl font-semibold">{{ number_format($currentMonthExpensesSum, 0, ',', ' ') }} €</div>
+                <h3 class="text-sm font-medium text-cyan-100 mb-1">Solde Actuel</h3>
+                <div class="text-4xl md:text-5xl font-semibold">{{ number_format($userBalance, 2, ',', ' ') }} DH</div>
             </div>
         </div>
 
         @if($pendingInvitations->count() > 0)
             <div class="space-y-4">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center">
+                <h3 class="text-lg font-semibold text-slate-800 flex items-center">
                     <span class="flex h-2 w-2 rounded-full bg-cyan-500 mr-2"></span>
                     Invitations en attente
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @foreach($pendingInvitations as $invitation)
-                        <div class="bg-white rounded-3xl shadow-sm border-2 border-cyan-100 p-6 flex justify-between items-center transition-all hover:border-cyan-200">
+                        <div class="bg-cyan-50 rounded-3xl shadow-sm border border-cyan-100 p-6 flex justify-between items-center transition-all hover:border-cyan-200">
                             <div class="flex items-center space-x-4">
                                 <div class="h-12 w-12 bg-cyan-50 rounded-2xl flex items-center justify-center text-cyan-600">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    <i class="fa-solid fa-building text-xl"></i>
                                 </div>
                                 <div>
-                                    <h4 class="font-bold text-slate-800">{{ $invitation->colocation->name }}</h4>
+                                    <h4 class="font-semibold text-slate-800">{{ $invitation->colocation->name }}</h4>
                                     <p class="text-xs text-slate-500">Vous avez été invité à rejoindre cette colocation.</p>
                                 </div>
                             </div>
                             <div class="flex space-x-2">
                                 <form method="POST" action="{{ route('invitations.refuse', $invitation->token) }}">
                                     @csrf
-                                    <button type="submit" class="px-4 py-2 text-sm font-bold text-slate-500 hover:text-red-600 transition-colors">Refuser</button>
+                                    <button type="submit" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-red-600 transition-colors">Refuser</button>
                                 </form>
-                                <a href="{{ route('invitations.accept', $invitation->token) }}" class="px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">Accepter</a>
+                                <a href="{{ route('invitations.accept', $invitation->token) }}" class="px-6 py-2 bg-cyan-600 text-white rounded-xl text-sm font-medium hover:bg-cyan-700 shadow-lg shadow-cyan-100 transition-all">Accepter</a>
                             </div>
                         </div>
                     @endforeach
@@ -59,18 +59,16 @@
             <div class="lg:col-span-3">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-slate-800">Dépenses récentes</h3>
-                    <a href="#" class="text-xs font-semibold text-cyan-600 hover:text-cyan-800 flex items-center">
-                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                        </svg>
+                    <a href="#" class="text-xs font-medium text-cyan-600 hover:text-cyan-800 flex items-center">
+                        <i class="fa-solid fa-arrow-right w-4 h-4 ml-1 text-cyan-600"></i>
                     </a>
                 </div>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                <div class="bg-cyan-50 rounded-3xl shadow-sm border border-cyan-100 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
-                                <tr class="bg-white border-b border-slate-100">
+                                <tr class="bg-cyan-50 border-b border-cyan-100">
                                     <th class="px-6 py-4 text-left text-xs font-medium text-slate-400 w-1/3">Titre / Catégorie</th>
                                     <th class="px-6 py-4 text-left text-xs font-medium text-slate-400">Montant</th>
                                     <th class="px-6 py-4 text-left text-xs font-medium text-slate-400">Coloc</th>
@@ -85,7 +83,7 @@
                                         </td>
 
                                         <td class="px-6 py-4">
-                                            <div class="text-sm font-medium text-slate-900">{{ number_format($expense->amount, 0, ',', ' ') }} €</div>
+                                            <div class="text-sm font-medium text-slate-900">{{ number_format($expense->amount, 2, ',', ' ') }} DH</div>
                                         </td>
                                         <td class="px-6 py-4">
                                             <span class="text-xs text-slate-500">{{ $expense->colocation->name }}</span>
@@ -108,7 +106,7 @@
             <div class="lg:col-span-1">
                 <h3 class="text-lg font-semibold text-slate-800 mb-4">Membres de la coloc</h3>
 
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-6">
+                <div class="bg-cyan-50 rounded-3xl shadow-sm border border-cyan-100 p-6">
                     <div class="flex items-center justify-between mb-6">
                         <span class="text-xs font-medium text-slate-500">Membres actifs</span>
                         <span class="px-2 py-1 bg-slate-50 text-slate-500 rounded text-[10px] font-bold uppercase">
@@ -135,9 +133,7 @@
                         </div>
                     @else
                         <div class="py-8 text-center">
-                            <svg class="w-10 h-10 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                            </svg>
+                            <i class="fa-solid fa-users text-3xl text-slate-300 mx-auto mb-3"></i>
                             <p class="text-slate-400 text-xs">Aucune colocation active.</p>
                         </div>
                     @endif

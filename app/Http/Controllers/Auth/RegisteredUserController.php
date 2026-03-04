@@ -18,9 +18,9 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.register');
+        return view('auth.register', ['email' => $request->query('email')]);
     }
 
     /**
@@ -28,27 +28,49 @@ class RegisteredUserController extends Controller
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function store(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+  public function store(Request $request): RedirectResponse
+{
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+        'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    ]);
 
-        $userRole = Role::where('name', 'user')->first();
+    $isFirstUser = User::count() === 0;
+    $roleName = $isFirstUser ? 'admin' : 'user';
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $userRole?->id,
-        ]);
+    $role = Role::where('name', $roleName)->firstOrFail();
 
-        event(new Registered($user));
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'role_id' => $role->id,
+    ]);
 
-        Auth::login($user);
+    event(new Registered($user));
 
-        return redirect(route('dashboard', absolute: false));
+    Auth::login($user);
+
+    // Handle Invitation Token after Registration
+    if (session()->has('invitation_token')) {
+        $token = session()->get('invitation_token');
+        $invitation = \App\Models\Invitation::where('token', $token)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($invitation && $invitation->email === $user->email) {
+            $invitation->colocation->users()->attach($user->id, [
+                'internal_role' => 'member',
+                'joined_at' => now(),
+            ]);
+            $invitation->update(['status' => 'accepted']);
+            session()->forget('invitation_token');
+
+            return redirect()->route('dashboard')->with('status', 'Bienvenue ! Vous avez rejoint la colocation ' . $invitation->colocation->name);
+        }
     }
+
+    return redirect(route('dashboard', absolute: false));
+}
 }

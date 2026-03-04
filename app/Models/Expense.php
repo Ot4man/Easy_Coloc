@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Expense extends Model
 {
     //
-    protected $fillable = ['title', 'amount', 'date', 'colocation_id', 'category_id', 'user_id'];
+    protected $fillable = ['title', 'amount', 'date', 'colocation_id', 'category_id', 'user_id', 'is_paid'];
 
     /**
      * Get the attributes that should be cast.
@@ -19,6 +19,7 @@ class Expense extends Model
         return [
             'date' => 'date',
             'amount' => 'decimal:2',
+            'is_paid' => 'boolean',
         ];
     }
     public function user()

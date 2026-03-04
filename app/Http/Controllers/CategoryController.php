@@ -6,28 +6,14 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Colocation;
 use App\Models\Category;
-
+use App\Http\Requests\StoreCategoryRequest;
 class CategoryController extends Controller
 {
     /**
      * Store a new category for a colocation.
      */
-    public function store(Request $request, Colocation $colocation)
+    public function store(StoreCategoryRequest $request, Colocation $colocation)
     {
-        // Simple owner check
-        $isOwner = $colocation->users()
-            ->where('user_id', auth()->id())
-            ->wherePivot('internal_role', 'owner')
-            ->wherePivotNull('left_at')
-            ->exists();
-
-        if (!$isOwner) {
-            abort(403, 'Seul le propriétaire peut ajouter des catégories.');
-        }
-
-        $request->validate([
-            'name' => 'required|string|max:30',
-        ]);
 
         // Prevent duplicates in same colocation
         $exists = $colocation->categories()
@@ -35,14 +21,13 @@ class CategoryController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Cette catégorie existe déjà.');
+            return back()->with('error', 'Category exist');
         }
-
         $colocation->categories()->create([
             'name' => $request->name,
         ]);
 
-        return back()->with('status', 'Catégorie ajoutée avec succès.');
+        return back()->with('status', 'Category added');
     }
 
     /**
@@ -65,6 +50,6 @@ class CategoryController extends Controller
 
         $category->delete();
 
-        return back()->with('status', 'Catégorie supprimée.');
+        return back()->with('status', 'Category deleted');
     }
 }
